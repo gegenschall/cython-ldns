@@ -59,4 +59,5 @@ cdef class ResourceData:
         return ResourceData_create(self._rdf)
 
 cdef ResourceData_create(ldns_rdf *rdf):
-    return ResourceData.__new__(ResourceData)._setup(rdf)
+    cdef ResourceData rd = ResourceData.__new__(ResourceData)
+    return rd._setup(rdf)

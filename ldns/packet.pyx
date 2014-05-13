@@ -1,3 +1,9 @@
+from time import struct_time, gmtime
+from calendar import timegm
+
+from libc.stdlib cimport malloc
+
+from ldns.ldns_host2str cimport ldns_pkt2str
 from ldns.packet cimport *
 from ldns.errors import LDNSStatusError
 from ldns.errors cimport LDNS_STATUS_OK
@@ -6,7 +12,7 @@ from ldns.resourcerecord cimport ResourceRecord, ResourceRecord_create
 from ldns.rdata cimport ResourceData, ResourceData_create
 
 
-def query_packet_from_str(str name, int rr_type, int rr_class, int flags):
+def query_packet_from_str(str name, int rr_type, int rr_class, int flags=0):
     cdef ldns_pkt* _pkt = ldns_pkt_new()
     status = ldns_pkt_query_new_frm_str(&_pkt,
         <bytes?>name, <ldns_rr_type?>rr_type, <ldns_rr_class?>rr_class, <uint16_t?>flags)
@@ -15,6 +21,20 @@ def query_packet_from_str(str name, int rr_type, int rr_class, int flags):
         raise LDNSStatusError(status)
 
     return Packet_create(_pkt)
+
+def query_packet(ResourceData name, int rr_type, int rr_class, int flags=0):
+    cdef ldns_rdf* _rdf = name._rdf
+
+    cdef ldns_pkt* _pkt = ldns_pkt_query_new(_rdf,
+        <ldns_rr_type?>rr_type, <ldns_rr_class?>rr_class, <uint16_t?>flags)
+
+    return Packet_create(_pkt)
+
+def ixfr_request_from_str(str name, int rr_class, int flags, ResourceRecord soa):
+    raise NotImplementedError()
+
+def ixfr_request(ResourceData name, int rr_class, ResourceRecord soa, int flags=0):
+    raise NotImplementedError()
 
 cdef class Packet:
     def __cinit__(self):
@@ -34,6 +54,9 @@ cdef class Packet:
         if isinstance(other, ResourceRecord):
             ret = ldns_pkt_rr(self._pkt, LDNS_SECTION_ANY, <ldns_rr*>other._rr)
             return ret
+
+    def __str__(self):
+        return <bytes>ldns_pkt2str(self._pkt)
 
     cdef Packet _setup(self, ldns_pkt* pkt):
         self._pkt = pkt
@@ -149,12 +172,19 @@ cdef class Packet:
         def __set__(self, ResourceData value):
             ldns_pkt_set_answerfrom(self._pkt, value._rdf)
 
-    # property timestamp:
-    #     def __get__(self):
-    #         return <object?>ldns_pkt_timestamp(self._pkt)
+    property timestamp:
+        def __get__(self):
+            cdef timeval tv = ldns_pkt_timestamp(self._pkt)
+            return gmtime(<int?>tv.tv_sec)
 
-    #     def __set__(self, object value):
-    #         ldns_pkt_set_timestamp(self._pkt, <timeval?>value)
+        def __set__(self, object value):
+            if not isinstance(value, struct_time):
+                raise TypeError('Not a valid struct_time')
+            cdef timeval* tv = <timeval*>malloc(sizeof(timeval))
+            # We shouldn't need to cast value. Python does the magic.
+            tv.tv_sec = timegm(value)
+            # derefencing doesn't work any other way. * is taken in Python...
+            ldns_pkt_set_timestamp(self._pkt, tv[0])
 
     property querytime:
         def __get__(self):
@@ -311,10 +341,7 @@ cdef class Packet:
             ldns_pkt_push_rr(self._pkt, <ldns_pkt_section>section, _rr)
 
     def push_rr_list(self, section, rr_list, safe=False):
-        if safe:
-            ldns_pkt_safe_push_rr_list(self._pkt, section, <ldns_rr_list*>rr_list)
-        else:
-            ldns_pkt_push_rr_list(self._pkt, section, <ldns_rr_list*>rr_list)
+        raise NotImplementedError()
 
 cdef Packet Packet_create(ldns_pkt* pkt):
     return Packet()._setup(pkt)
