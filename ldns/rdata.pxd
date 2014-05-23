@@ -10,7 +10,43 @@ cdef extern from "ldns/rdata.h":
     ctypedef ldns_struct_rdf ldns_rdf
 
     cdef enum ldns_enum_rdf_type:
-        LDNS_RDF_TYPE_NONE
+        LDNS_RDF_TYPE_NONE,
+        LDNS_RDF_TYPE_DNAME,
+        LDNS_RDF_TYPE_INT8,
+        LDNS_RDF_TYPE_INT16,
+        LDNS_RDF_TYPE_INT32,
+        LDNS_RDF_TYPE_A,
+        LDNS_RDF_TYPE_AAAA,
+        LDNS_RDF_TYPE_STR,
+        LDNS_RDF_TYPE_APL,
+        LDNS_RDF_TYPE_B32_EXT,
+        LDNS_RDF_TYPE_B64,
+        LDNS_RDF_TYPE_HEX,
+        LDNS_RDF_TYPE_NSEC,
+        LDNS_RDF_TYPE_TYPE,
+        LDNS_RDF_TYPE_CLASS,
+        LDNS_RDF_TYPE_CERT_ALG,
+        LDNS_RDF_TYPE_ALG,
+        LDNS_RDF_TYPE_UNKNOWN,
+        LDNS_RDF_TYPE_TIME,
+        LDNS_RDF_TYPE_PERIOD,
+        LDNS_RDF_TYPE_TSIGTIME,
+        LDNS_RDF_TYPE_HIP,
+        LDNS_RDF_TYPE_INT16_DATA,
+        LDNS_RDF_TYPE_SERVICE,
+        LDNS_RDF_TYPE_LOC,
+        LDNS_RDF_TYPE_WKS,
+        LDNS_RDF_TYPE_NSAP,
+        LDNS_RDF_TYPE_ATMA,
+        LDNS_RDF_TYPE_IPSECKEY,
+        LDNS_RDF_TYPE_NSEC3_SALT,
+        LDNS_RDF_TYPE_NSEC3_NEXT_OWNER,
+        LDNS_RDF_TYPE_ILNP64,
+        LDNS_RDF_TYPE_EUI48,
+        LDNS_RDF_TYPE_EUI64,
+        LDNS_RDF_TYPE_TAG,
+        LDNS_RDF_TYPE_LONG_STR,
+        LDNS_RDF_TYPE_BITMAP
     ctypedef ldns_enum_rdf_type ldns_rdf_type
 
     cdef enum ldns_enum_cert_algorithm:
