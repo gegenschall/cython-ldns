@@ -148,7 +148,6 @@ cdef extern from "ldns/rr.h":
     ldns_rr_type ldns_rr_get_type(const ldns_rr *rr)
     ldns_rr_class ldns_rr_get_class(const ldns_rr *rr)
 
-    # TODO: implement as list
     ldns_rdf* ldns_rr_rdf(const ldns_rr *rr, size_t nr)
     ldns_rdf* ldns_rr_set_rdf(ldns_rr *rr, const ldns_rdf *f, size_t position)
     bint ldns_rr_push_rdf(ldns_rr *rr, const ldns_rdf *f)
@@ -178,10 +177,9 @@ cdef extern from "ldns/rr.h":
     ldns_rr_type ldns_rr_list_type(const ldns_rr_list *rr_list)
     ldns_rdf *ldns_rr_list_owner(const ldns_rr_list *rr_list)
     void ldns_rr_list2canonical(ldns_rr_list *rr_list)
-    # End list functions
-
     bint ldns_is_rrset(ldns_rr_list *rr_list)
     ldns_rr_list *ldns_rr_list_subtype_by_rdf(ldns_rr_list *l, ldns_rdf *r, size_t pos)
+    # End list functions
 
     ldns_rr_type ldns_get_rr_type_by_name(const char *name)
     ldns_rr_class ldns_get_rr_class_by_name(const char *name)

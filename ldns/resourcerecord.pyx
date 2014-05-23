@@ -1,8 +1,9 @@
+from libc.stdio cimport FILE, fdopen
+
 from ldns.rdata import ResourceData
 from ldns.errors import InvalidLDNSTypeError, LDNSStatusError
 
 from ldns.errors cimport LDNS_STATUS_OK
-
 from ldns.resourcerecord cimport *
 from ldns.rdata cimport ResourceData, ResourceData_create
 from ldns.conversion cimport ldns_rr2str
@@ -30,8 +31,25 @@ cdef ldns_rr_list* _plist_to_rr_list(list rr_list):
 
     return ret
 
-def resource_record_from_file():
-    pass
+def resource_record_from_file(str filename, int default_ttl=0, ResourceData origin=None, ResourceData prev=None):
+    cdef ldns_status status
+    cdef FILE* fp
+
+    cdef ResourceRecord rr = ResourceRecord()
+
+    cdef uint32_t _default_ttl = <uint32_t>default_ttl
+    cdef ldns_rdf* _origin = NULL if origin is None else origin._rdf
+    cdef ldns_rdf* _prev = NULL if prev is None else prev._rdf
+
+    with open(filename, 'rb') as f:
+        fp = fdopen(f.fileno(), 'rb')
+        status = ldns_rr_new_frm_fp(&rr._rr, fp, &_default_ttl, &_origin, &_prev)
+        #fclose(fp)
+
+    if status != LDNS_STATUS_OK:
+        raise LDNSStatusError(status)
+
+    return rr
 
 def resource_record_from_str(str input not None, int default_ttl=0, *args):
     cdef ldns_rr* rr = ldns_rr_new()
@@ -98,8 +116,11 @@ cdef class ResourceRecord:
         if self._rr is not NULL:
             ldns_rr_free(self._rr)
 
-    def __richcmp__(self, ResourceRecord y, int op):
-        r = ldns_rr_compare(<ldns_rr*?>self, <ldns_rr*?>y)
+    def __richcmp__(ResourceRecord self, ResourceRecord y, int op):
+        cdef ldns_rr* rr1 = self._rr
+        cdef ldns_rr* rr2 = y._rr
+
+        cdef int r = ldns_rr_compare(rr1, rr2)
         # <
         if op == 0:
             return r == -1
@@ -108,7 +129,7 @@ cdef class ResourceRecord:
             return r == 1
         # <=, >=, ==
         elif op == 1 or op == 2 or op == 5:
-            r == 0
+            return r == 0
         # !=
         elif op == 3:
             return (r not in (-1, 0, 1))
@@ -191,6 +212,19 @@ cdef class ResourceRecord:
 
     def get_rdf(self, int at):
         cdef ldns_rdf* _rdf = ldns_rr_rdf(self._rr, at)
+
+        return ResourceData_create(_rdf)
+
+    def set_rdf(self, ResourceData rdf, int at):
+        cdef ldns_rdf* _rdf = rdf._rdf
+        ldns_rr_set_rdf(self._rr, _rdf, <size_t>at)
+
+    def push_rdf(self, ResourceData rdf):
+        cdef ldns_rdf* _rdf = rdf._rdf
+        ldns_rr_push_rdf(self._rr, _rdf)
+
+    def pop_rdf(self):
+        cdef ldns_rdf* _rdf = ldns_rr_pop_rdf(self._rr)
 
         return ResourceData_create(_rdf)
 
