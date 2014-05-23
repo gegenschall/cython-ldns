@@ -7,7 +7,7 @@ from ldns.conversion cimport ldns_pkt2str
 from ldns.packet cimport *
 from ldns.errors import LDNSStatusError
 from ldns.errors cimport LDNS_STATUS_OK
-from ldns.resourcerecord cimport ldns_rr, ldns_rr_list, _rr_list_to_plist, _plist_to_rr_list
+from ldns.resourcerecord cimport ldns_rr, ldns_rr_list, ldns_rr_clone, _rr_list_to_plist, _plist_to_rr_list
 from ldns.resourcerecord cimport ResourceRecord, ResourceRecord_create
 from ldns.rdata cimport ResourceData, ResourceData_create
 
@@ -321,6 +321,12 @@ cdef class Packet:
             rr_list = ldns_pkt_all_noquestion(self._pkt)
         return _rr_list_to_plist(rr_list)
 
+    def clone_section(self, int section):
+        cdef ldns_rr_list* rr_list = NULL
+        rr_list = ldns_pkt_get_section_clone(self._pkt, <ldns_pkt_section>section)
+
+        return _rr_list_to_plist(rr_list)
+
     def get_rr_by_name(self, str name, int section):
         raise NotImplementedError()
 
@@ -329,12 +335,16 @@ cdef class Packet:
 
         return _rr_list_to_plist(rr_list)
 
-    def get_rr_by_type_and_name(self, str name, int type, int section):
+    def get_rr_by_name_and_type(self, str name, int type, int section):
         raise NotImplementedError()
 
     def push_rr(self, ResourceRecord rr, int section, safe=False):
-        cdef ldns_rr* _rr = rr._rr
-
+        # Just so I remember this correctly. What happens if I don't clone:
+        # As soon as this Packet object has no references and gets freed,
+        # the rr from this method is set to NULL. After that Packet.__dealloc__
+        # frees the C struct for Packet and ldns_pkt_free tries to again free the
+        # rr reference => double-free
+        cdef ldns_rr* _rr = ldns_rr_clone(rr._rr)
         if safe:
             ldns_pkt_safe_push_rr(self._pkt, <ldns_pkt_section>section, _rr)
         else:
