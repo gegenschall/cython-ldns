@@ -1,0 +1,4 @@
+#!/bin/bash
+
+gdb -ex r --args python -c "import IPython; IPython.start_ipython()"
+
