@@ -1,49 +1,40 @@
+import sys
 from setuptools import setup
 from distutils.extension import Extension
 try:
     from Cython.Distutils import build_ext
     from Cython.Build import cythonize
-    has_cython = True
+    HAS_CYTHON = True
 except ImportError:
-    has_cython = False
+    HAS_CYTHON = False
 
-version = '1.6.17'
+# Is debug set?
+runtime_library_dirs = []
+if '--debug' in sys.argv:
+    runtime_library_dirs = ['/usr/local/debug/libldns/lib']
 
+ext = ".pyx" if HAS_CYTHON else ".c"
+extensions = [
+    Extension(
+        "*",
+        ["ldns/*" + ext],
+        runtime_library_dirs=runtime_library_dirs,
+        libraries=["ldns"]
+    ),
+    # Extension(
+    #     "*",
+    #     ["ldns/dnssec/*" + ext],
+    #     runtime_library_dirs=runtime_library_dirs,
+    #     libraries=["ldns"]
+    # ),
+]
 
-ldns_module = Extension(
-    "ldns.__init__",
-    ["ldns/__init__.pyx"],
-    libraries=["ldns"]
-)
-ldns_packet_module = Extension(
-    "ldns.packet",
-    ["ldns/packet.pyx"],
-    libraries=["ldns"]
-)
-ldns_rr_module = Extension(
-    "ldns.resourcerecord",
-    ["ldns/resourcerecord.pyx"],
-    libraries=["ldns"],
-)
-ldns_error_module = Extension(
-    "ldns.errors",
-    ["ldns/errors.pyx"],
-    libraries=["ldns"]
-)
+if HAS_CYTHON:
+    extensions = cythonize(extensions)
 
-ldns_rdata_module = Extension(
-    "ldns.rdata",
-    ["ldns/rdata.pyx"],
-    libraries=["ldns"]
-)
-ldns_dname_module = Extension(
-    "ldns.dname",
-    ["ldns/dname.pyx"],
-    libraries=["ldns"]
-)
-
-setup(name='ldns',
-    version=version,
+setup(
+    name='ldns',
+    version='0.1.0',
     description="",
     long_description="""The goal of ldns is to simplify DNS programming, it supports recent RFCs like the
     DNSSEC documents, and allows developers to easily create software conforming to current RFCs, and
@@ -63,21 +54,16 @@ setup(name='ldns',
         'Programming Language :: Python :: 3',
         'Topic :: Internet :: Name Service (DNS)'
     ],
+    install_requires=(
+        'ipaddr>=2.1.11',
+    ),
     keywords='ldns network dns dnssec nameserver',
     author='Zdenek Vasicek, Karel Slany',
     author_email='vasicek AT fit.vutbr.cz, slany AT fit.vutbr.cz',
     url='http://www.nlnetlabs.nl/projects/ldns/',
     license='BSD',
-    #py_modules=['ldns'],
-    ext_modules=cythonize([
-        ldns_module,
-        ldns_packet_module,
-        ldns_dname_module,
-        ldns_rr_module,
-        ldns_error_module,
-        ldns_rdata_module
-    ]),
+    ext_modules=extensions,
     zip_safe=False,
-    cmdclass = {'build_ext' : build_ext},
+    cmdclass={'build_ext': build_ext},
 )
 
