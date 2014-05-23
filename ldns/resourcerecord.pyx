@@ -1,5 +1,6 @@
 from ldns.rdata import ResourceData
-from ldns.errors import InvalidTypeOrClassError, LDNSStatusError
+from ldns.errors import InvalidLDNSTypeError, LDNSStatusError
+
 from ldns.errors cimport LDNS_STATUS_OK
 
 from ldns.resourcerecord cimport *
@@ -57,14 +58,14 @@ def resource_record_question_from_str(str input not None, int default_ttl=0, *ar
 def type_by_name(str name not None):
     r = ldns_get_rr_type_by_name(name)
     if r <= 0:
-        raise InvalidTypeOrClassError('%s is not a valid resource record type' % name)
+        raise Exception('%s is not a valid resource record type' % name)
 
     return r
 
 def class_by_name(str name not None):
     r = ldns_get_rr_class_by_name(name)
     if r <= 0:
-        raise InvalidTypeOrClassError('%s is not a valid resource record class' % name)
+        raise Exception('%s is not a valid resource record class' % name)
 
     return r
 
@@ -196,7 +197,7 @@ cdef class ResourceRecord:
     # functions from rr_functions.h
     def get_a_address(self):
         if not self.rr_type == LDNS_RR_TYPE_A:
-            raise InvalidTypeOrClassError()
+            raise InvalidLDNSTypeError(self.rr_type, LDNS_RR_TYPE_A)
 
         cdef ldns_rdf* _rdf = ldns_rr_a_address(self._rr)
 
@@ -204,27 +205,27 @@ cdef class ResourceRecord:
 
     def set_a_address(self, ResourceData addr):
         if not self.rr_type == LDNS_RR_TYPE_A:
-            raise InvalidTypeOrClassError()
+            raise InvalidLDNSTypeError(self.rr_type, LDNS_RR_TYPE_A)
 
         ldns_rr_a_set_address(self._rr, addr._rdf)
 
     def get_ns_nsdname(self):
         if not self.rr_type == LDNS_RR_TYPE_NS:
-            raise InvalidTypeOrClassError()
+            raise InvalidLDNSTypeError(self.rr_type, LDNS_RR_TYPE_NS)
 
         cdef ldns_rdf* _rdf = ldns_rr_ns_nsdname(self._rr)
         return ResourceData_create(_rdf)
 
     def get_mx_preference(self):
         if not self.rr_type == LDNS_RR_TYPE_MX:
-            raise InvalidTypeOrClassError()
+            raise InvalidLDNSTypeError(self.rr_type, LDNS_RR_TYPE_MX)
 
         cdef ldns_rdf* _rdf = ldns_rr_mx_preference(self._rr)
         return ResourceData_create(_rdf)
 
     def get_mx_exchange(self):
         if not self.rr_type == LDNS_RR_TYPE_MX:
-            raise InvalidTypeOrClassError()
+            raise InvalidLDNSTypeError(self.rr_type, LDNS_RR_TYPE_MX)
 
         cdef ldns_rdf* _rdf = ldns_rr_mx_exchange(self._rr)
         return ResourceData_create(_rdf)
