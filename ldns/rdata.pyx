@@ -1,5 +1,6 @@
 from ldns.rdata cimport *
-from ldns.ldns_host2str cimport ldns_rdf2str
+
+from ldns.conversion cimport ldns_rdf2str
 from libc.stdlib cimport malloc
 
 cdef class ResourceData:

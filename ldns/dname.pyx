@@ -3,7 +3,7 @@ from libc.stdlib cimport malloc
 from ldns.errors import LDNSStatusError
 from ldns.dname cimport DomainName, DomainName_create
 from ldns.rdata cimport ResourceData_create
-from ldns.ldns_host2str cimport ldns_rdf2str
+from ldns.conversion cimport ldns_rdf2str
 
 def domain_name_from_str(str value):
     cdef ldns_rdf* rdf = ldns_dname_new_frm_str(value)

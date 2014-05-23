@@ -3,7 +3,7 @@ from calendar import timegm
 
 from libc.stdlib cimport malloc
 
-from ldns.ldns_host2str cimport ldns_pkt2str
+from ldns.conversion cimport ldns_pkt2str
 from ldns.packet cimport *
 from ldns.errors import LDNSStatusError
 from ldns.errors cimport LDNS_STATUS_OK

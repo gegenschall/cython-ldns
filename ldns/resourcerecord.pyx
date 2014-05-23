@@ -4,7 +4,7 @@ from ldns.errors cimport LDNS_STATUS_OK
 
 from ldns.resourcerecord cimport *
 from ldns.rdata cimport ResourceData, ResourceData_create
-from ldns.ldns_host2str cimport ldns_rr2str
+from ldns.conversion cimport ldns_rr2str
 
 cdef class ResourceRecord
 cdef class ResourceRecordDescriptor
