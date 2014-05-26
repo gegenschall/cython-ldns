@@ -1,10 +1,10 @@
 from ldns.errors cimport LDNS_STATUS_OK
 from ldns.rdata cimport *
 
-from ldns.ldns_host2str cimport ldns_rdf2str
+from ldns.conversion cimport ldns_rdf2str
 from libc.stdio cimport fopen, fclose, FILE
 
-from ldns.dname import DomainName, DomainName_create
+from ldns.dname import DomainName
 from ldns.errors import LDNSStatusError
 
 from ipaddr import IPAddress
@@ -37,7 +37,7 @@ def rdf_from_file(int type, str filename):
 # cdef functions for converting resource data
 cdef C_TYPE_TO_PYTHON_TYPE = {
 #   LDNS type name              : (python type, type caster/constructor)
-    LDNS_RDF_TYPE_DNAME         : (DomainName,  DomainName_create),
+    LDNS_RDF_TYPE_DNAME         : (DomainName,  str),
     LDNS_RDF_TYPE_INT8          : (int,         int),
     LDNS_RDF_TYPE_INT16         : (int,         int),
     LDNS_RDF_TYPE_INT32         : (int,         int),

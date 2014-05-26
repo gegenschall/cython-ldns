@@ -18,7 +18,7 @@ cdef list _rr_list_to_plist(ldns_rr_list* rr_list):
 
     for i in range(rr_size):
         _rr = ldns_rr_list_rr(rr_list, i)
-        rr = ResourceRecord_create(<ldns_rr*>_rr)
+        rr = ResourceRecord_create(ldns_rr_clone(_rr))
         ret.append(<ResourceRecord>rr)
 
     return ret
